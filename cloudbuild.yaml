@@ -7,7 +7,7 @@ steps:
     args: [
       'build',
       '-t', 'gcr.io/test-fast-api-475508/fastapi-app',
-      '-f', 'api/app/Dockerfile',
+      '-f', 'fastapi-gcp-cicd/api/app/Dockerfile',
       'api/'
     ]
   
