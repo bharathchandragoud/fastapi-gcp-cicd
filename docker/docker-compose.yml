@@ -1,0 +1,113 @@
+version: '3.9'
+
+services:
+  # ---------------------------
+  # FASTAPI APPLICATION SERVICE
+  # ---------------------------
+  api:
+    build:
+      context: ..
+      dockerfile: api/Dockerfile
+    working_dir: /app/api
+    volumes:
+      - ..:/app                      # mount entire project so common/ is accessible
+      - uploaded_files_data:/app/uploaded_files
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - db
+    environment:
+      - PYTHONPATH=/app              # ensures /app/common is visible
+      - DATABASE_URL=postgresql+asyncpg://admin:admin@db:5432/neuro_assets_db
+      - REDIS_URL=redis://redis:6379/0
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  # ---------------------------
+  # IMAGE WORKER SERVICE
+  # ---------------------------
+  image_worker:
+    build:
+      context: ..
+      dockerfile: worker/Dockerfile
+    working_dir: /app/worker
+    volumes:
+      - ..:/app
+    command: celery -A worker.celery_app worker -Q image --loglevel=info
+    depends_on:
+      - redis
+      - db
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql+asyncpg://admin:admin@db:5432/neuro_assets_db
+      - REDIS_URL=redis://redis:6379/0
+
+  # ---------------------------
+  # AUDIO WORKER SERVICE
+  # ---------------------------
+  audio_worker:
+    build:
+      context: ..
+      dockerfile: worker/Dockerfile
+    working_dir: /app/worker
+    volumes:
+      - ..:/app
+    command: celery -A worker.celery_app worker -Q audio --loglevel=info
+    depends_on:
+      - redis
+      - db
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql+asyncpg://admin:admin@db:5432/neuro_assets_db
+      - REDIS_URL=redis://redis:6379/0
+
+  # ---------------------------
+  # VIDEO WORKER SERVICE
+  # ---------------------------
+  video_worker:
+    build:
+      context: ..
+      dockerfile: worker/Dockerfile
+    working_dir: /app/worker
+    volumes:
+      - ..:/app
+    command: celery -A worker.celery_app worker -Q video --loglevel=info
+    depends_on:
+      - redis
+      - db
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql+asyncpg://admin:admin@db:5432/neuro_assets_db
+      - REDIS_URL=redis://redis:6379/0
+
+  # ---------------------------
+  # REDIS QUEUE SERVICE
+  # ---------------------------
+  redis:
+    image: redis:7
+    container_name: redis_queue
+    ports:
+      - "6379:6379"
+
+  # ---------------------------
+  # POSTGRES DATABASE
+  # ---------------------------
+  db:
+    image: postgres:16
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: neuro_assets_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+# ---------------------------
+# NAMED VOLUMES
+# ---------------------------
+volumes:
+  pg_data:
+  uploaded_files_data:

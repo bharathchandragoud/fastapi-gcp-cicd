@@ -1,0 +1,26 @@
+# Web framework
+fastapi==0.115.0
+uvicorn[standard]==0.29.0
+
+# Database
+sqlalchemy[asyncio]==2.0.32
+asyncpg==0.29.0
+alembic==1.13.2
+
+# Task queue and cache
+celery==5.4.0
+aioredis==2.0.1
+
+# Validation and settings
+pydantic==2.9.1
+pydantic-settings==2.3.4
+python-dotenv==1.0.1
+
+# HTTP Client (HuggingFace / Qwen / external APIs)
+httpx==0.27.2
+
+# Utilities
+loguru==0.7.2
+
+# Added dependency for form data handling
+python-multipart
