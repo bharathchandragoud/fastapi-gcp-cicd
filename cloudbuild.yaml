@@ -1,0 +1,18 @@
+steps:
+  # Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/test-fast-api-475508/fastapi-app', '.']
+  
+  # Push image to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/test-fast-api-475508/fastapi-app']
+
+  # SSH into your VM and restart container
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'compute'
+      - 'ssh'
+      - 'fastapi-test-vm'
+      - '--zone=asia-south1-b'
+      - '--command'
+      - 'docker stop fastapi || true && docker rm fastapi || true && docker run -d -p 8080:8080 --name fastapi gcr.io/$PROJECT_ID/fastapi-app'
