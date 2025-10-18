@@ -2,9 +2,14 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 steps:
-  # Build Docker image
+  # Build Docker image from Dockerfile inside api/Docker
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/test-fast-api-475508/fastapi-app', '.']
+    args: [
+      'build',
+      '-t', 'gcr.io/test-fast-api-475508/fastapi-app',
+      '-f', 'api/Docker/Dockerfile',
+      'api/'
+    ]
   
   # Push image to Google Container Registry
   - name: 'gcr.io/cloud-builders/docker'
@@ -18,4 +23,4 @@ steps:
       - 'fastapi-test-vm'
       - '--zone=asia-south1-b'
       - '--command'
-      - 'docker stop fastapi || true && docker rm fastapi || true && docker run -d -p 8080:8080 --name fastapi gcr.io/$PROJECT_ID/fastapi-app'
+      - 'docker stop fastapi || true && docker rm fastapi || true && docker run -d -p 8080:8080 --name fastapi gcr.io/test-fast-api-475508/fastapi-app'
